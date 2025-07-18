@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        #map{height: 100vh;}
+    </style>
+    <title>Document</title>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        
+        const map = L.map('map').setView([27.7172, 85.3240],15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+            maxZoom:19
+        }).addTo(map);
+
+        // Marker for bus
+        const busMarker = L.marker([27.7172,85.3240]).addTo(map).bindPopup("BUS_01");
+
+        // Function to fetch and update location
+        async function updatedBusLocation() {
+            try{
+                const res = await fetch('http://localhost:5000/locations');
+                const data = await res.json();
+
+                const latest = data[data.length - 1];
+                if(latest){
+                    const lat = latest.latitude;
+                    const lon = latest.longitude;
+                    console.log("Latest Lat and Long:",lat,lon);
+                    busMarker.setLatLng([lat,lon]);
+                    map.setView([lat,lon]);
+                }
+            }catch(err){
+                console.error("Error fetching data:",err);
+            }
+        }
+
+        // update time
+        setInterval(updatedBusLocation,5000);
+
+        // first update
+        updatedBusLocation();
+    </script>
+</body>
+</html>
